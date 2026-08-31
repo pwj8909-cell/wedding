@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>스마트 축의대 시스템</title>
+    
+    <!-- 모바일 어플 설정 -->
+    <meta name="theme-color" content="#881337">
+    <link rel="apple-touch-icon" href="https://cdn-icons-png.flaticon.com/512/2904/2904973.png">
+    
+    <!-- Tailwind CSS 및 아이콘 라이브러리 -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Pretendard:wght@300;400;500;600;700&display=swap');
+        body {
+            font-family: 'Pretendard', sans-serif;
+            background-color: #f8fafc;
+            -webkit-tap-highlight-color: transparent;
+        }
+        @media print {
+            .no-print { display: none !important; }
+            body { background: white; }
+        }
+    </style>
+</head>
+<body class="text-slate-800 select-none">
+
+    <!-- 상단 헤더 -->
+    <header class="bg-rose-900 text-white shadow-md sticky top-0 z-50 no-print">
+        <div class="max-w-7xl mx-auto px-4 h-16 flex items-center justify-between">
+            <div class="flex items-center space-x-3">
+                <i data-lucide="heart" class="w-7 h-7 text-rose-300 fill-rose-300"></i>
+                <h1 class="text-xl font-bold tracking-tight">스마트 축의대</h1>
+            </div>
+            <button onclick="exportToCSV()" class="p-2 bg-rose-800 hover:bg-rose-700 rounded-lg text-xs flex items-center gap-1 transition-colors">
+                <i data-lucide="download" class="w-4 h-4"></i> 백업
+            </button>
+        </div>
+    </header>
+
+    <main class="max-w-7xl mx-auto px-4 py-6 space-y-6">
+
+        <!-- 대시보드 통계 -->
+        <section class="grid grid-cols-2 md:grid-cols-4 gap-3 no-print">
+            <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-100 flex items-center justify-between">
+                <div>
+                    <p class="text-xs font-semibold text-slate-400">총 축의금</p>
+                    <p id="statTotalAmount" class="text-xl font-bold text-slate-900 mt-1">0 원</p>
+                </div>
+                <div class="p-2.5 bg-rose-50 text-rose-600 rounded-xl">
+                    <i data-lucide="coins" class="w-5 h-5"></i>
+                </div>
+            </div>
+
+            <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-100 flex items-center justify-between">
+                <div>
+                    <p class="text-xs font-semibold text-slate-400">총 하객 수</p>
+                    <p id="statTotalGuests" class="text-xl font-bold text-slate-900 mt-1">0 명</p>
+                </div>
+                <div class="p-2.5 bg-blue-50 text-blue-600 rounded-xl">
+                    <i data-lucide="users" class="w-5 h-5"></i>
+                </div>
+            </div>
+
+            <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-100 flex items-center justify-between">
+                <div>
+                    <p class="text-xs font-semibold text-slate-400">식권 발급</p>
+                    <p id="statTotalMealTickets" class="text-xl font-bold text-slate-900 mt-1">0 장</p>
+                </div>
+                <div class="p-2.5 bg-amber-50 text-amber-600 rounded-xl">
+                    <i data-lucide="utensils" class="w-5 h-5"></i>
+                </div>
+            </div>
+
+            <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-100 flex items-center justify-between">
+                <div>
+                    <p class="text-xs font-semibold text-slate-400">답례품 발급</p>
+                    <p id="statTotalGifts" class="text-xl font-bold text-slate-900 mt-1">0 개</p>
+                </div>
+                <div class="p-2.5 bg-emerald-50 text-emerald-600 rounded-xl">
+                    <i data-lucide="gift" class="w-5 h-5"></i>
+                </div>
+            </div>
+        </section>
+
+        <!-- 메인 입력폼 & 데이터 목록 -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+
+            <!-- 접수 등록 폼 -->
+            <section class="bg-white p-5 rounded-2xl shadow-sm border border-slate-100 h-fit space-y-4 no-print">
+                <div class="border-b border-slate-100 pb-3 flex items-center justify-between">
+                    <h2 class="text-base font-bold text-slate-800 flex items-center gap-2">
+                        <i data-lucide="user-plus" class="w-5 h-5 text-rose-600"></i>
+                        축의금 등록
+                    </h2>
+                </div>
+
+                <form id="entryForm" onsubmit="handleFormSubmit(event)" class="space-y-4">
+                    <div>
+                        <label class="block text-xs font-medium text-slate-600 mb-1">구분 *</label>
+                        <div class="grid grid-cols-2 gap-2">
+                            <label class="cursor-pointer">
+                                <input type="radio" name="side" value="groom" checked class="peer sr-only">
+                                <div class="py-2 text-center text-xs font-semibold rounded-xl border border-slate-200 peer-checked:bg-blue-50 peer-checked:border-blue-500 peer-checked:text-blue-600 transition-all">
+                                    신랑측
+                                </div>
+                            </label>
+                            <label class="cursor-pointer">
+                                <input type="radio" name="side" value="bride" class="peer sr-only">
+                                <div class="py-2 text-center text-xs font-semibold rounded-xl border border-slate-200 peer-checked:bg-rose-50 peer-checked:border-rose-500 peer-checked:text-rose-600 transition-all">
+                                    신부측
+                                </div>
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-3">
+                        <div>
+                            <label class="block text-xs font-medium text-slate-600 mb-1">성함 *</label>
+                            <input type="text" id="guestName" required placeholder="성함" class="w-full px-3 py-2 border border-slate-200 rounded-xl focus:outline-none focus:border-rose-500 text-sm">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-medium text-slate-600 mb-1">관계</label>
+                            <input type="text" id="relation" placeholder="예: 친구" class="w-full px-3 py-2 border border-slate-200 rounded-xl focus:outline-none focus:border-rose-500 text-sm">
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-medium text-slate-600 mb-1">축의금 (원) *</label>
+                        <input type="number" id="amount" step="10000" min="0" required placeholder="0" class="w-full px-3 py-2 border border-slate-200 rounded-xl focus:outline-none focus:border-rose-500 text-sm font-semibold text-right text-rose-600">
+                        <div class="grid grid-cols-4 gap-1 mt-1.5">
+                            <button type="button" onclick="addAmount(50000)" class="py-1 text-xs bg-slate-100 text-slate-700 font-medium rounded-lg">+5만</button>
+                            <button type="button" onclick="addAmount(100000)" class="py-1 text-xs bg-slate-100 text-slate-700 font-medium rounded-lg">+10만</button>
+                            <button type="button" onclick="addAmount(150000)" class="py-1 text-xs bg-slate-100 text-slate-700 font-medium rounded-lg">+15만</button>
+                            <button type="button" onclick="setAmount(0)" class="py-1 text-xs bg-rose-50 text-rose-600 font-medium rounded-lg">초기화</button>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-3">
+                        <div>
+                            <label class="block text-xs font-medium text-slate-600 mb-1">식권 수량</label>
+                            <div class="flex items-center">
+                                <button type="button" onclick="adjustCount('mealTickets', -1)" class="w-8 h-8 border border-slate-200 rounded-l-xl bg-slate-50">-</button>
+                                <input type="number" id="mealTickets" value="1" min="0" class="w-full h-8 border-y border-slate-200 text-center font-semibold text-xs focus:outline-none">
+                                <button type="button" onclick="adjustCount('mealTickets', 1)" class="w-8 h-8 border border-slate-200 rounded-r-xl bg-slate-50">+</button>
+                            </div>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-medium text-slate-600 mb-1">답례품 수량</label>
+                            <div class="flex items-center">
+                                <button type="button" onclick="adjustCount('giftTickets', -1)" class="w-8 h-8 border border-slate-200 rounded-l-xl bg-slate-50">-</button>
+                                <input type="number" id="giftTickets" value="0" min="0" class="w-full h-8 border-y border-slate-200 text-center font-semibold text-xs focus:outline-none">
+                                <button type="button" onclick="adjustCount('giftTickets', 1)" class="w-8 h-8 border border-slate-200 rounded-r-xl bg-slate-50">+</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-medium text-slate-600 mb-1">비고 / 메모</label>
+                        <input type="text" id="note" placeholder="특이사항 메모" class="w-full px-3 py-2 border border-slate-200 rounded-xl focus:outline-none focus:border-rose-500 text-sm">
+                    </div>
+
+                    <button type="submit" class="w-full py-3 bg-rose-600 hover:bg-rose-700 text-white font-semibold rounded-xl shadow-md transition-all flex items-center justify-center gap-2">
+                        <i data-lucide="check" class="w-4 h-4"></i>
+                        등록하기
+                    </button>
+                </form>
+            </section>
+
+            <!-- 리스트 섹션 -->
+            <section class="lg:col-span-2 bg-white rounded-2xl shadow-sm border border-slate-100 flex flex-col h-[550px]">
+                <div class="p-4 border-b border-slate-100 flex items-center justify-between gap-2 no-print">
+                    <div class="flex items-center space-x-1">
+                        <button onclick="filterSide('all')" id="filterAll" class="px-2.5 py-1 rounded-lg text-xs font-bold bg-slate-900 text-white">전체</button>
+                        <button onclick="filterSide('groom')" id="filterGroom" class="px-2.5 py-1 rounded-lg text-xs font-medium bg-slate-100 text-slate-600">신랑측</button>
+                        <button onclick="filterSide('bride')" id="filterBride" class="px-2.5 py-1 rounded-lg text-xs font-medium bg-slate-100 text-slate-600">신부측</button>
+                    </div>
+
+                    <input type="text" id="searchInput" onkeyup="renderList()" placeholder="이름 검색" class="px-3 py-1 text-xs border border-slate-200 rounded-lg focus:outline-none focus:border-rose-500 w-32">
+                </div>
+
+                <div class="overflow-y-auto flex-1 p-3">
+                    <table class="w-full text-left text-xs">
+                        <thead class="bg-slate-50 text-slate-500 uppercase sticky top-0 border-b border-slate-100">
+                            <tr>
+                                <th class="p-2">구분</th>
+                                <th class="p-2">성함</th>
+                                <th class="p-2">관계</th>
+                                <th class="p-2 text-right">금액</th>
+                                <th class="p-2 text-center">식권</th>
+                                <th class="p-2 text-center">답례품</th>
+                                <th class="p-2 text-center no-print">삭제</th>
+                            </tr>
+                        </thead>
+                        <tbody id="guestListTable" class="divide-y divide-slate-100">
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="p-3 border-t border-slate-100 bg-slate-50 rounded-b-2xl flex justify-between items-center text-xs text-slate-500 no-print">
+                    <span>총 <strong id="recordCount" class="text-slate-800">0</strong>건</span>
+                    <button onclick="clearAllData()" class="text-rose-500 hover:underline">전체 데이터 초기화</button>
+                </div>
+            </section>
+        </div>
+    </main>
+
+    <script>
+        let guests = JSON.parse(localStorage.getItem('wedding_guests_data') || '[]');
+        let currentFilter = 'all';
+
+        window.onload = function() {
+            lucide.createIcons();
+            renderList();
+            updateStats();
+        };
+
+        function saveData() {
+            localStorage.setItem('wedding_guests_data', JSON.stringify(guests));
+        }
+
+        function addAmount(val) {
+            const input = document.getElementById('amount');
+            input.value = (parseInt(input.value) || 0) + val;
+        }
+
+        function setAmount(val) {
+            document.getElementById('amount').value = val;
+        }
+
+        function adjustCount(id, delta) {
+            const input = document.getElementById(id);
+            input.value = Math.max(0, (parseInt(input.value) || 0) + delta);
+        }
+
+        function handleFormSubmit(event) {
+            event.preventDefault();
+            const side = document.querySelector('input[name="side"]:checked').value;
+            const name = document.getElementById('guestName').value.trim();
+            const relation = document.getElementById('relation').value.trim();
+            const amount = parseInt(document.getElementById('amount').value) || 0;
+            const mealTickets = parseInt(document.getElementById('mealTickets').value) || 0;
+            const giftTickets = parseInt(document.getElementById('giftTickets').value) || 0;
+            const note = document.getElementById('note').value.trim();
+
+            guests.unshift({ id: Date.now(), side, name, relation, amount, mealTickets, giftTickets, note });
+            saveData();
+
+            document.getElementById('entryForm').reset();
+            document.getElementById('mealTickets').value = 1;
+            document.getElementById('giftTickets').value = 0;
+            document.querySelector('input[name="side"][value="groom"]').checked = true;
+
+            renderList();
+            updateStats();
+        }
+
+        function deleteGuest(id) {
+            if (confirm('해당 내역을 삭제하시겠습니까?')) {
+                guests = guests.filter(g => g.id !== id);
+                saveData();
+                renderList();
+                updateStats();
+            }
+        }
+
+        function filterSide(side) {
+            currentFilter = side;
+            ['filterAll', 'filterGroom', 'filterBride'].forEach(id => {
+                document.getElementById(id).className = "px-2.5 py-1 rounded-lg text-xs font-medium bg-slate-100 text-slate-600";
+            });
+            if (side === 'all') document.getElementById('filterAll').className = "px-2.5 py-1 rounded-lg text-xs font-bold bg-slate-900 text-white";
+            if (side === 'groom') document.getElementById('filterGroom').className = "px-2.5 py-1 rounded-lg text-xs font-bold bg-blue-600 text-white";
+            if (side === 'bride') document.getElementById('filterBride').className = "px-2.5 py-1 rounded-lg text-xs font-bold bg-rose-600 text-white";
+            renderList();
+        }
+
+        function renderList() {
+            const tbody = document.getElementById('guestListTable');
+            const searchKeyword = document.getElementById('searchInput').value.toLowerCase();
+
+            let filtered = guests.filter(g => {
+                if (currentFilter !== 'all' && g.side !== currentFilter) return false;
+                if (searchKeyword) return g.name.toLowerCase().includes(searchKeyword);
+                return true;
+            });
+
+            document.getElementById('recordCount').innerText = filtered.length;
+
+            if (filtered.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="7" class="text-center py-8 text-slate-400">내역이 없습니다.</td></tr>`;
+                return;
+            }
+
+            tbody.innerHTML = filtered.map(g => `
+                <tr class="hover:bg-slate-50">
+                    <td class="p-2">${g.side === 'groom' ? '<span class="text-blue-600 font-bold">신랑</span>' : '<span class="text-rose-600 font-bold">신부</span>'}</td>
+                    <td class="p-2 font-semibold text-slate-800">${escapeHtml(g.name)}</td>
+                    <td class="p-2 text-slate-500">${escapeHtml(g.relation || '-')}</td>
+                    <td class="p-2 font-bold text-right text-rose-600">${g.amount.toLocaleString()}원</td>
+                    <td class="p-2 text-center">${g.mealTickets}</td>
+                    <td class="p-2 text-center">${g.giftTickets}</td>
+                    <td class="p-2 text-center no-print">
+                        <button onclick="deleteGuest(${g.id})" class="text-slate-400 hover:text-red-600">
+                            <i data-lucide="trash-2" class="w-4 h-4"></i>
+                        </button>
+                    </td>
+                </tr>
+            `).join('');
+
+            lucide.createIcons();
+        }
+
+        function updateStats() {
+            document.getElementById('statTotalAmount').innerText = guests.reduce((sum, g) => sum + g.amount, 0).toLocaleString() + ' 원';
+            document.getElementById('statTotalGuests').innerText = guests.length.toLocaleString() + ' 명';
+            document.getElementById('statTotalMealTickets').innerText = guests.reduce((sum, g) => sum + g.mealTickets, 0).toLocaleString() + ' 장';
+            document.getElementById('statTotalGifts').innerText = guests.reduce((sum, g) => sum + g.giftTickets, 0).toLocaleString() + ' 개';
+        }
+
+        function exportToCSV() {
+            if (guests.length === 0) return alert('데이터가 없습니다.');
+            let csv = "\uFEFF구분,성함,관계,금액,식권,답례품,비고\n";
+            guests.forEach(g => {
+                csv += `"${g.side === 'groom' ? '신랑측' : '신부측'}","${g.name}","${g.relation}",${g.amount},${g.mealTickets},${g.giftTickets},"${g.note}"\n`;
+            });
+            const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement("a");
+            link.href = URL.createObjectURL(blob);
+            link.download = `축의금명단_${new Date().toISOString().slice(0,10)}.csv`;
+            link.click();
+        }
+
+        function clearAllData() {
+            if (confirm('모든 데이터를 삭제하시겠습니까?')) {
+                guests = [];
+                saveData();
+                renderList();
+                updateStats();
+            }
+        }
+
+        function escapeHtml(text) {
+            return text ? text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;") : '';
+        }
+    </script>
+</body>
+</html>
